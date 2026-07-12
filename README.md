@@ -7,7 +7,7 @@
 ![Node](https://img.shields.io/badge/node-%E2%89%A520.9-brightgreen)
 ![TypeScript](https://img.shields.io/badge/typescript-5.x-blue)
 ![Express](https://img.shields.io/badge/backend-express-lightgrey)
-![Next.js](https://img.shields.io/badge/frontend-next.js%20(app%20router)-black)
+![Next.js](<https://img.shields.io/badge/frontend-next.js%20(app%20router)-black>)
 ![Tests](https://img.shields.io/badge/tests-vitest-6E9F18)
 
 ![How the GrowEasy CSV Importer works: arbitrary-shaped CSVs go into an AI reshaping funnel, get re-checked, then split into accepted vs. rejected (missing contact info)](assets/illustrations/how-it-works.png)
@@ -61,32 +61,31 @@ Sanity check: `curl http://localhost:4000/health` → `{"status":"ok"}`.
 ## Architecture
 
 ```
-┌──────────────────────────────┐        ┌───────────────────────────────────────────┐
-│  frontend/  (Next.js)        │        │  backend/  (Express)                      │
-│                              │        │                                           │
-│  Dropzone ─▶ Papaparse ──▶ preview    │  multer (10 MB, CSV only)                 │
-│  (client-side, NO AI call)   │        │      │                                    │
-│                              │        │      ▼                                    │
-│  "Confirm Import"            │  POST  │  csvParser.ts (Papaparse, header trim)    │
-│      │                       │ /api/  │      │                                    │
-│      └──────────────────────────import──▶ aiExtractor.ts                          │
-│                              │        │      ├─ chunk rows into batches (20)      │
-│  ProcessingIndicator ◀────── NDJSON ──│      ├─ ≤3 batches in flight              │
-│  (progress per batch)        │ stream │      ├─ retry w/ exponential backoff      │
-│      │                       │        │      ▼                                    │
-│      ▼                       │        │  geminiClient.ts (structured output,      │
-│  ResultView                  │        │      responseSchema, temperature 0)       │
-│  (imported / skipped tabs)   │        │      │                                    │
-│                              │        │      ▼                                    │
-│                              │        │  validation.ts (server-side re-check)     │
-└──────────────────────────────┘        └───────────────────────────────────────────┘
+frontend/ (Next.js)
+  Dropzone -> Papaparse -> preview table      (client-side, NO AI call)
+  "Confirm Import" --------------------------------+
+                                                     |  POST /api/import
+                                                     v
+backend/ (Express)
+  multer (10 MB, CSV only)
+    -> csvParser.ts        parse buffer into rows (Papaparse, header trim)
+    -> aiExtractor.ts      chunk rows into batches of AI_BATCH_SIZE (20)
+                            run <=3 batches concurrently, retry w/ backoff
+    -> geminiClient.ts     structured output (responseSchema, temperature 0)
+    -> validation.ts       server-side re-check of every AI-returned record
+                                                     |
+                                                     |  NDJSON stream:
+                                                     |  progress event per batch,
+                                                     |  then one result/error event
+                                                     v
+frontend/ (Next.js)
+  ProcessingIndicator (progress per batch) -> ResultView (imported / skipped tabs)
 ```
 
 ```
 backend/    Express + TypeScript API — CSV parsing, batched AI field-mapping, validation
 frontend/   Next.js (App Router) + TypeScript + Tailwind — upload, preview, confirm, results
-samples/    Sample CSVs shaped like real-world lead sources, for manual testing
-docker-compose.yml
+samples/    Sample CSVs shaped like real-world lead sources, for manual testing docker-compose.yml
 ```
 
 ### Request lifecycle
@@ -135,11 +134,11 @@ object per line:
 }}
 ```
 
-| Event | When | Payload |
-| --- | --- | --- |
-| `progress` | Once up-front, then per completed AI batch | `batchesTotal`, `batchesDone`, `rowsProcessed`, `totalRows` |
-| `result` | Terminal, on success | `ImportResult` (see above) |
-| `error` | Terminal, if extraction throws after streaming began | `error` message string |
+| Event      | When                                                 | Payload                                                     |
+| ---------- | ---------------------------------------------------- | ----------------------------------------------------------- |
+| `progress` | Once up-front, then per completed AI batch           | `batchesTotal`, `batchesDone`, `rowsProcessed`, `totalRows` |
+| `result`   | Terminal, on success                                 | `ImportResult` (see above)                                  |
+| `error`    | Terminal, if extraction throws after streaming began | `error` message string                                      |
 
 Pre-stream failures use plain HTTP status codes: `400` for a missing file, non-CSV upload,
 unparseable CSV, or a CSV with no data rows; `429` from the rate limiter.
@@ -151,15 +150,15 @@ unparseable CSV, or a CSV with no data rows; `429` from the rate limiter.
 
 ### `backend/.env`
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `PORT` | Backend HTTP port | `4000` |
-| `CORS_ORIGIN` | Allowed CORS origin for the frontend | `*` |
-| `GEMINI_API_KEY` | Google Gemini API key (**required**) | — |
-| `GEMINI_MODEL` | Primary Gemini model | `gemini-3-flash-preview` |
-| `GEMINI_FALLBACK_MODEL` | Fallback model on capacity/quota errors (empty = disabled) | *(empty)* |
-| `AI_BATCH_SIZE` | CSV rows sent to Gemini per request | `20` |
-| `AI_BATCH_CONCURRENCY` | Batches processed in parallel | `3` |
+| Variable                | Description                                                | Default                  |
+| ----------------------- | ---------------------------------------------------------- | ------------------------ |
+| `PORT`                  | Backend HTTP port                                          | `4000`                   |
+| `CORS_ORIGIN`           | Allowed CORS origin for the frontend                       | `*`                      |
+| `GEMINI_API_KEY`        | Google Gemini API key (**required**)                       | —                        |
+| `GEMINI_MODEL`          | Primary Gemini model                                       | `gemini-3-flash-preview` |
+| `GEMINI_FALLBACK_MODEL` | Fallback model on capacity/quota errors (empty = disabled) | _(empty)_                |
+| `AI_BATCH_SIZE`         | CSV rows sent to Gemini per request                        | `20`                     |
+| `AI_BATCH_CONCURRENCY`  | Batches processed in parallel                              | `3`                      |
 
 > **Choosing models:** only configure models verified against the extraction schema. Several
 > current models (e.g. `gemini-3.5-flash`, `gemini-3.1-flash-lite`) silently drop rows/fields
@@ -168,8 +167,8 @@ unparseable CSV, or a CSV with no data rows; `429` from the rate limiter.
 
 ### `frontend/.env.local`
 
-| Variable | Description | Default |
-| --- | --- | --- |
+| Variable                   | Description                 | Default                 |
+| -------------------------- | --------------------------- | ----------------------- |
 | `NEXT_PUBLIC_API_BASE_URL` | Base URL of the backend API | `http://localhost:4000` |
 
 ## CRM schema & mapping rules
@@ -186,7 +185,7 @@ the Gemini `responseSchema` in `geminiClient.ts`) in sync when changing it.
   from any status/remark column by meaning ("junk" → `BAD_LEAD`, "deal won" → `SALE_DONE`),
   else `null`.
 - `data_source` ∈ `leads_on_demand | meridian_tower | eden_park | varah_swamy |
-  sarjapur_plots` — inferred from campaign/ad names when confident, else `null`. The model
+sarjapur_plots` — inferred from campaign/ad names when confident, else `null`. The model
   is told not to guess.
 - `created_at` must be parseable by `new Date(...)`; unparseable dates are coerced to `null`.
 - Multiple emails/phones in one row: first value wins, the rest are appended to `crm_note`.
@@ -224,13 +223,13 @@ are available in the UI via the sample picker on the upload screen.
 
 Each service is a separate npm workspace-less package — run commands from its own directory.
 
-| Command | `backend/` | `frontend/` |
-| --- | --- | --- |
-| `npm run dev` | API with hot reload (tsx watch) on `:4000` | Next.js dev server on `:3000` |
-| `npm run build` | Compile TypeScript to `dist/` | Production build |
-| `npm start` | Run compiled build | Serve production build |
-| `npm run lint` | ESLint over `src` | ESLint |
-| `npm test` | Vitest | Vitest + Testing Library (jsdom) |
+| Command         | `backend/`                                 | `frontend/`                      |
+| --------------- | ------------------------------------------ | -------------------------------- |
+| `npm run dev`   | API with hot reload (tsx watch) on `:4000` | Next.js dev server on `:3000`    |
+| `npm run build` | Compile TypeScript to `dist/`              | Production build                 |
+| `npm start`     | Run compiled build                         | Serve production build           |
+| `npm run lint`  | ESLint over `src`                          | ESLint                           |
+| `npm test`      | Vitest                                     | Vitest + Testing Library (jsdom) |
 
 > `npm run dev` reads `.env` **once at process start** — `tsx watch` restarts on source
 > changes only, so restart the backend manually after editing `.env`.
@@ -246,6 +245,7 @@ npx vitest run -t "splits multiple emails"       # tests matching a name
 ```
 
 **Backend** covers:
+
 - `csvParser.ts` — arbitrary headers, empty-file handling
 - `validation.ts` — enum/date coercion, multi-email/mobile splitting backstop, line-break
   escaping, the must-have-contact-info skip rule
@@ -253,6 +253,7 @@ npx vitest run -t "splits multiple emails"       # tests matching a name
   duplicate/invented `_row` indices don't double-count (Gemini is mocked)
 
 **Frontend** covers:
+
 - `lib/csv.ts` — parsing, header trimming, the 500-row preview cap
 - `lib/api.ts` — NDJSON stream handling: progress events, error events, network failures,
   streams that end without a `result`
