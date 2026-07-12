@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Carbon Design System tokens (design.md) — White theme */
+:root {
+  --canvas: #ffffff;
+  --surface-1: #f4f4f4;
+  --surface-2: #e0e0e0;
+  --hairline: #e0e0e0;
+  --hairline-strong: #161616;
+  --ink: #161616;
+  --ink-muted: #525252;
+  --ink-subtle: #8c8c8c;
+  --link: #0f62fe;
+  --link-hover: #0043ce;
+  --inverse-canvas: #161616;
+  --inverse-surface-1: #262626;
+  --inverse-ink: #ffffff;
+  --inverse-ink-muted: #c6c6c6;
+  --success: #24a148;
+  --warning: #f1c21b;
+  --error: #da1e28;
+}
+
+/* Carbon Gray-100 theme */
+.dark {
+  --canvas: #161616;
+  --surface-1: #262626;
+  --surface-2: #393939;
+  --hairline: #393939;
+  --hairline-strong: #f4f4f4;
+  --ink: #f4f4f4;
+  --ink-muted: #c6c6c6;
+  --ink-subtle: #8d8d8d;
+  --link: #78a9ff;
+  --link-hover: #a6c8ff;
+  --inverse-canvas: #262626;
+  --inverse-surface-1: #393939;
+  --inverse-ink: #f4f4f4;
+  --inverse-ink-muted: #c6c6c6;
+  --success: #42be65;
+  --warning: #f1c21b;
+  --error: #fa4d56;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-primary: #0f62fe;
+  --color-primary-hover: #0353e9;
+  --color-primary-active: #002d9c;
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-inverse-canvas: var(--inverse-canvas);
+  --color-inverse-surface-1: var(--inverse-surface-1);
+  --color-inverse-ink: var(--inverse-ink);
+  --color-inverse-ink-muted: var(--inverse-ink-muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  /* Carbon secondary button is #393939 in both themes */
+  --color-btn-secondary: #393939;
+  --color-btn-secondary-hover: #4c4c4c;
+  --color-btn-secondary-active: #6f6f6f;
+  --font-sans: var(--font-plex-sans), "Helvetica Neue", Arial, sans-serif;
+  --radius-none: 0px;
+}
+
+html {
+  background: var(--canvas);
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-plex-sans), "Helvetica Neue", Arial, sans-serif;
+  /* Carbon precision detail — 0.16px tracking on body sizes */
+  letter-spacing: 0.16px;
+  font-size: 16px;
+  line-height: 1.5;
+  overscroll-behavior: none;
+}
+
+/* Carbon focus treatment: 2px primary outline */
+:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: -2px;
+}
