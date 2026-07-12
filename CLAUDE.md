@@ -39,10 +39,14 @@ docker-compose.yml   Runs both services together
 - `GEMINI_API_KEY=your-key-here docker compose up --build` — runs both services (frontend `:3000`, backend `:4000`)
 
 ### Env setup
-Backend needs `backend/.env` (copy from `.env.example`) with `GEMINI_API_KEY` required.
-Frontend needs `frontend/.env.local` with `NEXT_PUBLIC_API_BASE_URL` (defaults to
-`http://localhost:4000`). Key backend tuning vars: `GEMINI_MODEL`, `GEMINI_FALLBACK_MODEL`,
-`AI_BATCH_SIZE` (default 20), `AI_BATCH_CONCURRENCY` (default 3).
+Backend needs `backend/.env` (copy from `backend/.env.example`) with `GEMINI_API_KEY` required.
+Frontend needs `frontend/.env` (copy from `frontend/.env.example`) with `NEXT_PUBLIC_API_BASE_URL`
+(defaults to `http://localhost:4000`). Key backend tuning vars: `GEMINI_MODEL`,
+`GEMINI_FALLBACK_MODEL`, `AI_BATCH_SIZE` (default 20), `AI_BATCH_CONCURRENCY` (default 3).
+
+These two `npm run dev` env files are separate from the root-level `.env`, which
+`docker-compose.yml` reads for `${VAR}` substitution when running `docker compose up` — that
+one doesn't apply to local (non-Docker) runs.
 
 ## Architecture
 

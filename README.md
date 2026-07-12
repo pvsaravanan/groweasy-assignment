@@ -38,12 +38,13 @@ npm run dev
 # Terminal 2 — frontend (http://localhost:3000)
 cd frontend
 npm install
-cp .env.example .env.local
+cp .env.example .env
 npm run dev
 ```
 
 Or run both with Docker Compose. `docker-compose.yml` reads `${VAR}` substitutions from a
-`.env` file at the repo root (**not** `backend/.env` — that one's only used by `npm run dev`):
+`.env` file at the repo root (**not** `backend/.env` or `frontend/.env` — those are only used
+by `npm run dev`):
 
 ```bash
 cp .env.example .env   # then set GEMINI_API_KEY in .env
@@ -165,7 +166,7 @@ unparseable CSV, or a CSV with no data rows; `429` from the rate limiter.
 > or loop until `MAX_TOKENS` on this structured-output schema. The row-accounting backstop
 > (below) surfaces such failures as skipped rows instead of losing data silently.
 
-### `frontend/.env.local`
+### `frontend/.env`
 
 | Variable                   | Description                 | Default                 |
 | -------------------------- | --------------------------- | ----------------------- |
