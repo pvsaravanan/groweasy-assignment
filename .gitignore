@@ -1,0 +1,8 @@
+# Local AI tooling / editor state
+.claude/
+.agents/
+skills-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
