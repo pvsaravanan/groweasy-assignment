@@ -15,6 +15,7 @@
 ## Table of contents
 
 - [Quick start](#quick-start)
+- [Deployment](#deployment)
 - [Architecture](#architecture)
 - [API reference](#api-reference)
 - [Configuration](#configuration)
@@ -58,6 +59,36 @@ GEMINI_API_KEY=your-key-here docker compose up --build
 ```
 
 Sanity check: `curl http://localhost:4000/health` → `{"status":"ok"}`.
+
+## Deployment
+
+Frontend and backend deploy to separate platforms — the backend is a long-running Express
+server (`app.listen`), which is a better fit for a persistent-container host than for Vercel's
+serverless functions.
+
+**Backend → Render**, using the `render.yaml` blueprint at the repo root (builds
+`backend/Dockerfile`):
+
+1. In Render, "New +" → "Blueprint" → point at this repo. It picks up `render.yaml`
+   automatically.
+2. Set `GEMINI_API_KEY` (required) and `CORS_ORIGIN` (the frontend's deployed URL, e.g.
+   `https://your-app.vercel.app`) in the Render service's environment variables — both are
+   marked `sync: false` in the blueprint so they're not committed.
+3. Render assigns the container a `PORT` env var automatically; the backend already reads
+   `process.env.PORT` (see `backend/src/index.ts`), so no change needed there.
+4. Note the resulting service URL (e.g. `https://groweasy-backend.onrender.com`).
+
+**Frontend → Vercel**, as a plain Next.js project rooted at `frontend/`:
+
+1. Import the repo in Vercel, set the project's root directory to `frontend`. Vercel
+   auto-detects Next.js — no `vercel.json` needed.
+2. Set `NEXT_PUBLIC_API_BASE_URL` to the Render backend's URL from above. This is a build-time
+   variable, so set it before the first deploy — or after, followed by a redeploy (saving it
+   alone does not rebuild an existing deployment).
+
+Sanity check after both are live: open the Vercel URL, upload a sample CSV, and confirm the
+import completes — DevTools → Network should show requests going to the Render URL, not
+`localhost`.
 
 ## Architecture
 

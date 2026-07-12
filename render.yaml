@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: groweasy-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3-flash-preview
+      - key: GEMINI_FALLBACK_MODEL
+        value: ""
+      - key: AI_BATCH_SIZE
+        value: "20"
+      - key: AI_BATCH_CONCURRENCY
+        value: "3"
+      - key: CORS_ORIGIN
+        sync: false

@@ -48,6 +48,20 @@ These two `npm run dev` env files are separate from the root-level `.env`, which
 `docker-compose.yml` reads for `${VAR}` substitution when running `docker compose up` — that
 one doesn't apply to local (non-Docker) runs.
 
+### Deployment
+Frontend and backend deploy to **separate platforms**, not a single multi-service config —
+the backend is a persistent `app.listen` Express server, which fits a long-running container
+host better than Vercel's serverless functions.
+- **Backend → Render**, via `render.yaml` at the repo root (`runtime: docker`, builds
+  `backend/Dockerfile`). `GEMINI_API_KEY` and `CORS_ORIGIN` are `sync: false` — set them in the
+  Render dashboard, not in the blueprint. Render injects its own `PORT`, which
+  `backend/src/index.ts` already reads from `process.env.PORT`.
+- **Frontend → Vercel**, as a plain Next.js project rooted at `frontend/` (no `vercel.json` —
+  removed after an earlier multi-service `vercel.json` approach failed on entrypoint/runtime
+  detection for the Express backend). `NEXT_PUBLIC_API_BASE_URL` must be set to the Render
+  backend's URL — it's a build-time var, so changing it requires a redeploy, not just a save.
+See the README's [Deployment](README.md#deployment) section for the step-by-step.
+
 ## Architecture
 
 ### End-to-end flow
