@@ -3,6 +3,10 @@
 .agents/
 skills-lock.json
 
+# Docker Compose reads this for ${VAR} substitution — keep the real key local.
+.env
+!.env.example
+
 # OS
 .DS_Store
 Thumbs.db

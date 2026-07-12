@@ -42,7 +42,15 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Or run both with Docker Compose:
+Or run both with Docker Compose. `docker-compose.yml` reads `${VAR}` substitutions from a
+`.env` file at the repo root (**not** `backend/.env` — that one's only used by `npm run dev`):
+
+```bash
+cp .env.example .env   # then set GEMINI_API_KEY in .env
+docker compose up --build
+```
+
+Alternatively, skip the file and pass the key inline for a one-off run:
 
 ```bash
 GEMINI_API_KEY=your-key-here docker compose up --build
