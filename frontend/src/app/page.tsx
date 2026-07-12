@@ -88,7 +88,6 @@ export default function Home() {
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-baseline gap-3">
             <span className="text-sm font-semibold tracking-[0.16px]">GrowEasy</span>
-            <span className="hidden text-sm text-ink-muted sm:inline">CSV Importer</span>
           </div>
           <div className="flex items-center gap-4">
             <p className="hidden text-xs tracking-[0.32px] text-ink-subtle sm:block">AI-powered lead import</p>
@@ -203,7 +202,7 @@ export default function Home() {
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
           <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
             <div className="flex max-w-sm flex-col gap-2">
-              <p className="text-sm font-semibold text-inverse-ink">GrowEasy CSV Importer</p>
+              <p className="text-sm font-semibold text-inverse-ink">GrowEasy</p>
               <p className="text-sm text-inverse-ink-muted">Any CSV in. Clean leads out.</p>
             </div>
             <div className="flex gap-12">
